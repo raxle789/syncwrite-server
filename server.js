@@ -101,17 +101,17 @@ async function updateProfile(id, email, displayName, avatar) {
   return updatedUser;
 }
 
-async function findOrCreateDocument(id) {
-  if (id == null) return;
+async function findOrCreateDocument(userId, docId) {
+  if (docId == null) return;
 
-  const document = await Document.findById(id);
+  const document = await Document.findById(docId);
   if (document) return document;
-  const timestamp = new Date();
   return await Document.create({
-    _id: id,
+    _id: docId,
     fileName: "New Document",
     data: defaultValue,
-    lastEdited: timestamp,
+    ownerId: userId,
+    collaborators: [],
   });
 }
 
@@ -155,6 +155,38 @@ async function updateFileName(id, fileName) {
   );
 
   return updatedData;
+}
+
+async function findOrAddCollaborator(userId, docId) {
+  if (userId == null) return;
+  if (docId == null) return;
+
+  const document = await Document.findById(docId);
+  if (!document) {
+    return;
+  }
+
+  let collaborators = document.collaborators;
+  if (userId !== "" && userId !== document.ownerId) {
+    if (!collaborators.includes(userId)) {
+      collaborators.push(userId);
+      await Document.findByIdAndUpdate(docId, {
+        collaborators: collaborators,
+      });
+
+      const docListData = await DocumentList.findById(userId);
+      const timestamp = new Date();
+
+      let newDocItem = {
+        docId: document._id,
+        fileName: document.fileName,
+        thumbnail: "",
+        openedDate: timestamp,
+      };
+      const updatedDocList = [newDocItem, ...docListData.list];
+      await updateDocList(userId, updatedDocList);
+    }
+  }
 }
 
 async function findOrCreateWorkspace(id) {
@@ -209,9 +241,10 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("user-left", socket.id);
   });
 
-  socket.on("get-document", async (documentId) => {
-    const document = await findOrCreateDocument(documentId);
-    socket.join(documentId);
+  socket.on("get-document", async (userId, documentId) => {
+    const document = await findOrCreateDocument(userId, documentId);
+    // socket.join(documentId);
+    await findOrAddCollaborator(userId, documentId);
     socket.emit("load-document", document);
 
     socket.on("send-changes", (delta) => {
