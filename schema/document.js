@@ -2,8 +2,6 @@ const { Schema, model } = require("mongoose");
 
 const Document = new Schema({
   _id: String,
-  fileName: String,
-  data: Object,
   ownerId: String,
   collaborators: {
     type: [String],
@@ -15,6 +13,9 @@ const Document = new Schema({
     },
     default: [],
   },
+  fileName: String,
+  thumbnail: String,
+  data: Object,
 });
 
 module.exports = model("Document", Document);

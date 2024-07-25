@@ -43,7 +43,6 @@ const io = socketIo(server, {
 });
 const users = {}; // Object to store user ID and corresponding socket ID
 const rooms = {}; // Object to store room ID and corresponding user IDs
-const defaultValue = "";
 
 // functions
 async function findOrCreateUser(id, email, displayName, avatar) {
@@ -108,19 +107,42 @@ async function findOrCreateDocument(userId, docId) {
   if (document) return document;
   return await Document.create({
     _id: docId,
-    fileName: "New Document",
-    data: defaultValue,
     ownerId: userId,
     collaborators: [],
+    fileName: "New Document",
+    thumbnail: "",
+    data: "",
   });
+}
+
+async function findDocMetadata(list) {
+  let result = [];
+  for (const item of list) {
+    const document = await Document.findById(item.docId);
+    if (document) {
+      result.push({
+        docId: item.docId,
+        fileName: document.fileName,
+        thumbnail: document.thumbnail,
+        openedDate: item.openedDate,
+      });
+    }
+  }
+  return result;
 }
 
 async function findOrCreateDocList(id) {
   if (!id && id == null) return;
 
   const docList = await DocumentList.findById(id);
-  if (docList) return docList;
-  return await DocumentList.create({ _id: id, list: [] });
+  if (docList) {
+    const result = await findDocMetadata(docList.list);
+    return result;
+  }
+
+  await DocumentList.create({ _id: id, list: [] });
+  const list = [];
+  return list;
 }
 
 async function updateDocList(id, currentData) {
@@ -179,8 +201,6 @@ async function findOrAddCollaborator(userId, docId) {
 
       let newDocItem = {
         docId: document._id,
-        fileName: document.fileName,
-        thumbnail: "",
         openedDate: timestamp,
       };
       const updatedDocList = [newDocItem, ...docListData.list];
@@ -253,10 +273,8 @@ io.on("connection", (socket) => {
 
     socket.on("save-document", async (data, callback) => {
       try {
-        const timestamp = new Date();
         await Document.findByIdAndUpdate(documentId, {
           data: data,
-          lastEdited: timestamp,
         });
         if (callback) callback();
       } catch (error) {
@@ -303,10 +321,20 @@ app.post("/api/get-or-create-doclist", async (req, res) => {
 
 app.put("/api/update-doclist", async (req, res) => {
   const { id, list } = req.body;
+
+  let result = [];
+  if (list) {
+    for (const item of list) {
+      result.push({
+        docId: item.docId,
+        openedDate: item.openedDate,
+      });
+    }
+  }
+
   try {
-    // const currentData = { id: id, list: [...list] };
-    const docList = await updateDocList(id, list);
-    res.json(docList);
+    await updateDocList(id, result);
+    res.json(list);
   } catch (error) {
     res.status(500).json({ error: error.message });
     console.log(error.message);
