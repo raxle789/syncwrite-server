@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 const Document = require("./schema/document");
 const DocumentList = require("./schema/document-list");
 const User = require("./schema/user");
-const Workspace = require("./schema/workspace");
 
 const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const socketIo = require("socket.io");
+const sharp = require("sharp");
 
 // connect to MongoDB
 mongoose.connect("mongodb://localhost:27017/gdocs-clone", {
@@ -16,6 +16,14 @@ mongoose.connect("mongodb://localhost:27017/gdocs-clone", {
   useFindAndModify: false,
   useCreateIndex: true,
 });
+// const uri =
+//   "mongodb+srv://isqdifatih182:CCRsdDWPqK0X8Zzu@cluster0.bef6y0i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// mongoose.connect(uri, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+//   useFindAndModify: false,
+//   useCreateIndex: true,
+// });
 
 // initiate Express
 const app = express();
@@ -43,18 +51,38 @@ const io = socketIo(server, {
 });
 const users = {}; // Object to store user ID and corresponding socket ID
 const rooms = {}; // Object to store room ID and corresponding user IDs
+const avatarImages = [
+  "./assets/avatar1.jpg",
+  "./assets/avatar2.jpg",
+  "./assets/avatar3.jpg",
+];
 
 // functions
+function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+async function convertImagetoBase64(filePath) {
+  const imageBuffer = await sharp(filePath).toBuffer();
+  const base64String = imageBuffer.toString("base64");
+  return base64String;
+}
+
 async function findOrCreateUser(id, email, displayName, avatar) {
   if (id == null) return;
 
   const user = await User.findById(id);
   if (user) return user;
+
+  const randomNumber = getRandomInt(0, 2);
+  const avatarImg = await convertImagetoBase64(avatarImages[randomNumber]);
   return await User.create({
     _id: id,
     email: email ?? "",
     displayName: displayName ?? "",
-    avatar: avatar ?? "",
+    avatar: avatar ?? `data:image/jpg;base64,${avatarImg}`,
   });
 }
 
@@ -69,10 +97,12 @@ async function findUsersNow(list) {
         avatar: user.avatar,
       });
     } else {
+      const randomNumber = getRandomInt(0, 2);
+      const avatarImg = await convertImagetoBase64(avatarImages[randomNumber]);
       result.push({
         userId: "anonim",
         displayName: "Anonim",
-        avatar: "",
+        avatar: `data:image/jpg;base64,${avatarImg}`,
       });
     }
   }
@@ -183,6 +213,10 @@ async function findOrAddCollaborator(userId, docId) {
   if (userId == null) return;
   if (docId == null) return;
 
+  const user = await User.findById(userId);
+  if (!user) {
+    return;
+  }
   const document = await Document.findById(docId);
   if (!document) {
     return;
@@ -207,17 +241,6 @@ async function findOrAddCollaborator(userId, docId) {
       await updateDocList(userId, updatedDocList);
     }
   }
-}
-
-async function findOrCreateWorkspace(id) {
-  if (id == null) return;
-
-  const workspace = await Workspace.findById(id);
-  if (workspace) return workspace;
-  return await Workspace.create({
-    _id: id,
-    collaborators: [],
-  });
 }
 
 // server action

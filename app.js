@@ -1,17 +1,22 @@
-const express = require('express');
-const app = express();
-const router = express.Router();
+const mongoose = require("mongoose");
+const uri =
+  "mongodb+srv://isqdifatih182:CCRsdDWPqK0X8Zzu@cluster0.bef6y0i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-router.route('/users')
-  .get((req, res) => {
-    res.send('Get all users');
-  })
-  .post((req, res) => {
-    res.send('Create a new user');
-  });
+const clientOptions = {
+  serverApi: { version: "1", strict: true, deprecationErrors: true },
+};
 
-app.use('/', router);
-
-app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});
+async function run() {
+  try {
+    // Create a Mongoose client with a MongoClientOptions object to set the Stable API version
+    await mongoose.connect(uri, clientOptions);
+    await mongoose.connection.db.admin().command({ ping: 1 });
+    console.log(
+      "Pinged your deployment. You successfully connected to MongoDB!"
+    );
+  } finally {
+    // Ensures that the client will close when you finish/error
+    await mongoose.disconnect();
+  }
+}
+run().catch(console.dir);

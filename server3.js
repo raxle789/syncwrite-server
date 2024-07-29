@@ -328,3 +328,14 @@ io.on("connection", (socket) => {
     });
   });
 });
+
+async function findOrCreateWorkspace(id) {
+  if (id == null) return;
+
+  const workspace = await Workspace.findById(id);
+  if (workspace) return workspace;
+  return await Workspace.create({
+    _id: id,
+    collaborators: [],
+  });
+}

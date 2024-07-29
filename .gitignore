@@ -1,1 +1,6 @@
 /node_modules
+app.js
+functions.js
+server2.js
+server3.js
+.env
