@@ -30,6 +30,8 @@ origin_receiver = "https://syncwrite-client.vercel.app/";
 app.use(
   cors({
     origin: origin_receiver,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
