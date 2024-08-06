@@ -399,6 +399,10 @@ app.post("/api/get-users-now", async (req, res) => {
   }
 });
 
+app.get("/", (req, res) => {
+  res.send("Hello from syncwrite backend");
+});
+
 // run server on port 3001
 server.listen(3001, () => {
   console.log("SyncWrite server is running on port 3001");
