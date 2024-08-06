@@ -25,10 +25,11 @@ const app = express();
 // Adjust the payload size limit
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
+origin_receiver = "https://syncwrite-client.vercel.app/";
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: origin_receiver,
   })
 );
 
@@ -38,7 +39,7 @@ const server = http.createServer(app);
 // initiate Socket.io
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: origin_receiver,
     methods: ["GET", "POST"],
   },
   connectionStateRecovery: {},
