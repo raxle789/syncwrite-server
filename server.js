@@ -1,3 +1,4 @@
+require("dotenv").config();
 const mongoose = require("mongoose");
 const Document = require("./schema/document");
 const DocumentList = require("./schema/document-list");
@@ -10,20 +11,13 @@ const socketIo = require("socket.io");
 const sharp = require("sharp");
 
 // connect to MongoDB
-mongoose.connect("mongodb://localhost:27017/gdocs-clone", {
+const uri = process.env.DB_URI;
+mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false,
   useCreateIndex: true,
 });
-// const uri =
-//   "mongodb+srv://isqdifatih182:CCRsdDWPqK0X8Zzu@cluster0.bef6y0i.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-// mongoose.connect(uri, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true,
-//   useFindAndModify: false,
-//   useCreateIndex: true,
-// });
 
 // initiate Express
 const app = express();
