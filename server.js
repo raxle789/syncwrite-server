@@ -49,9 +49,9 @@ const io = socketIo(server, {
 const users = {}; // Object to store user ID and corresponding socket ID
 const rooms = {}; // Object to store room ID and corresponding user IDs
 const avatarImages = [
-  "./assets/avatar1.jpg",
-  "./assets/avatar2.jpg",
-  "./assets/avatar3.jpg",
+  "/assets/avatar1.jpg",
+  "/assets/avatar2.jpg",
+  "/assets/avatar3.jpg",
 ];
 
 // functions
@@ -62,7 +62,8 @@ function getRandomInt(min, max) {
 }
 
 async function convertImagetoBase64(filePath) {
-  const imageBuffer = await sharp(filePath).toBuffer();
+  const imagePath = path.join(__dirname, "public", filePath);
+  const imageBuffer = await sharp(imagePath).toBuffer();
   const base64String = imageBuffer.toString("base64");
   return base64String;
 }
