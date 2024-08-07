@@ -1,4 +1,5 @@
 require("dotenv").config();
+const path = require("path");
 const mongoose = require("mongoose");
 const Document = require("./schema/document");
 const DocumentList = require("./schema/document-list");
