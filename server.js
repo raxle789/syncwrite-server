@@ -6,8 +6,8 @@ const DocumentList = require("./schema/document-list");
 const User = require("./schema/user");
 
 const express = require("express");
-const https = require("https");
-// const http = require("http");
+// const https = require("https");
+const http = require("http");
 const cors = require("cors");
 const socketIo = require("socket.io");
 const sharp = require("sharp");
@@ -38,15 +38,15 @@ app.use(
 );
 
 // create server HTTP
-const server = https.createServer(app);
+const server = http.createServer(app);
 
 // initiate Socket.io
 const io = socketIo(server, {
   cors: {
     origin: origin_receiver,
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
+    // allowedHeaders: ["Content-Type", "Authorization"],
+    // credentials: true,
   },
   connectionStateRecovery: {},
 });
@@ -411,7 +411,7 @@ app.get("/", (req, res) => {
 });
 
 // run server on port 3001
-// server.listen(3001, () => {
-//   console.log("SyncWrite server is running on port 3001");
-// });
-module.exports = server;
+server.listen(3001, () => {
+  console.log("SyncWrite server is running on port 3001");
+});
+// module.exports = server;
