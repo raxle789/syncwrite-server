@@ -414,3 +414,4 @@ app.get("/", (req, res) => {
 server.listen(3001, () => {
   console.log("SyncWrite server is running on port 3001");
 });
+module.exports = server;
