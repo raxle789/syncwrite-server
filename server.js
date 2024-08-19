@@ -411,7 +411,7 @@ app.get("/", (req, res) => {
 });
 
 // run server on port 3001
-server.listen(3001, () => {
-  console.log("SyncWrite server is running on port 3001");
-});
+// server.listen(3001, () => {
+//   console.log("SyncWrite server is running on port 3001");
+// });
 module.exports = server;
