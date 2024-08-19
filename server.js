@@ -6,7 +6,8 @@ const DocumentList = require("./schema/document-list");
 const User = require("./schema/user");
 
 const express = require("express");
-const http = require("http");
+const https = require("https");
+// const http = require("http");
 const cors = require("cors");
 const socketIo = require("socket.io");
 const sharp = require("sharp");
@@ -37,13 +38,15 @@ app.use(
 );
 
 // create server HTTP
-const server = http.createServer(app);
+const server = https.createServer(app);
 
 // initiate Socket.io
 const io = socketIo(server, {
   cors: {
     origin: origin_receiver,
     methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
   connectionStateRecovery: {},
 });
