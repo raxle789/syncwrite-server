@@ -6,14 +6,13 @@ const DocumentList = require("./schema/document-list");
 const User = require("./schema/user");
 
 const express = require("express");
-// const https = require("https");
 const http = require("http");
 const cors = require("cors");
 const socketIo = require("socket.io");
 const sharp = require("sharp");
 
 // connect to MongoDB
-const uri = process.env.DB_URI;
+const uri = process.env.ALTERNATIVE_DB_URI;
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -211,6 +210,23 @@ async function updateFileName(id, fileName) {
   return updatedData;
 }
 
+async function saveThumbnail(id, image) {
+  if (id == null) return;
+
+  const document = await Document.findById(id);
+  if (!document) {
+    return res.status(404).json({ message: "Document not found" });
+  }
+
+  const updatedData = await Document.findByIdAndUpdate(
+    id,
+    { thumbnail: image },
+    { new: true, runValidators: true }
+  );
+
+  return updatedData;
+}
+
 async function findOrAddCollaborator(userId, docId) {
   if (userId == null) return;
   if (docId == null) return;
@@ -344,6 +360,17 @@ app.post("/api/get-or-create-doclist", async (req, res) => {
   }
 });
 
+app.post("/api/save-thumbnail", async (req, res) => {
+  const { docId, image } = req.body;
+  try {
+    const docList = await saveThumbnail(docId, image);
+    res.json({ message: "Thumbnail has been saved" });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+    console.info(error.message);
+  }
+});
+
 app.put("/api/update-doclist", async (req, res) => {
   const { id, list } = req.body;
 
@@ -414,4 +441,3 @@ app.get("/", (req, res) => {
 server.listen(3001, () => {
   console.log("SyncWrite server is running on port 3001");
 });
-// module.exports = server;
