@@ -12,7 +12,7 @@ const socketIo = require("socket.io");
 const sharp = require("sharp");
 
 // connect to MongoDB
-const uri = process.env.ALTERNATIVE_DB_URI;
+const uri = process.env.ALTERNATIVE_DB_URI2;
 mongoose.connect(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
